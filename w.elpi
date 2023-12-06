@@ -142,14 +142,9 @@ free _ L L.
 % quantification (binding) of a list of variables
 pred bind i:list tye, i:list tye, i:tye, o:ty.
 bind [] _ T (mono T1) :- copy T T1.
-bind [X|XS] Theta T (all E x\ T2 x) :-
+bind [X|XS] Theta T (all E x\ T1 x) :-
   if (mem-theta Theta (uvar X _)) (E = eqt) (E = any),
-  bind XS Theta T T1,
-  pi c\ copy (uvar X _) c => copy-ty T1 (T2 c).
-
-pred copy-ty i:ty, o:ty.
-copy-ty (mono X1) (mono X2) :- copy X1 X2.
-copy-ty (all E F1) (all E F2) :- pi x\ copy x x => copy-ty (F1 x) (F2 x).
+  pi c\ copy (uvar X _) c => bind XS Theta T (T1 c).
 
 pred copy i:tye, o:tye.
 copy integer integer.
