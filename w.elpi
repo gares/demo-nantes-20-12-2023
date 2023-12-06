@@ -35,18 +35,6 @@ type mono   tye -> ty.
 
 pred w i:term, o:ty.
 
-% constants
-
-w (literal _)      (mono integer).
-w (global "plus")  (mono (integer ==> integer ==> integer)).
-
-w (global "[]")    (all any x\ mono (list x)).
-w (global "::")    (all any x\ mono (x ==> list x ==> list x)).
-w (global "size")  (all any x\ mono (list x ==> integer)).
-w (global "undup") (all eqt x\ mono (list x ==> list x)).
-
-w (global ",")     (all any x\ all any y\ mono (x ==> y ==> (pair x y))).
-
 % terms
 
 w (app H A) (mono T) :-
@@ -67,10 +55,6 @@ w (eq LHS RHS) (mono boolean) :-
   eqbar T.
 
 w X (mono T) :- w X (all E Poly), specialize X (all E Poly) T.
-
-pred err.
-
-w X (mono ETY) :- not err, err => w X (mono TY), type-error X TY ETY.
 
 % schemas
 pred specialize i:term, i:ty, o:tye.
@@ -197,6 +181,23 @@ eqtype-error T :- halt "KO: type" T "has no equality".
 % }}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% constants
+
+w (literal _)      (mono integer).
+w (global "plus")  (mono (integer ==> integer ==> integer)).
+
+w (global "[]")    (all any x\ mono (list x)).
+w (global "::")    (all any x\ mono (x ==> list x ==> list x)).
+w (global "size")  (all any x\ mono (list x ==> integer)).
+w (global "undup") (all eqt x\ mono (list x ==> list x)).
+
+w (global ",")     (all any x\ all any y\ mono (x ==> y ==> (pair x y))).
+
+pred err.
+
+w X (mono ETY) :- not err, err => w X (mono TY), type-error X TY ETY.
+
 
 pred typecheck i:term.
 typecheck T :-
