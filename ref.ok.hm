@@ -1,0 +1,22 @@
+Checking: eq (literal 3) (literal 2)
+eq (literal 3) (literal 2)  :  mono bool
+
+Checking: let (lam c0 \ c0) X0 c0 \ app c0 (global [])
+let (lam c0 \ c0) (all any c0 \ mono (c0 ==> c0)) c0 \ app c0 (global [])  :  
+ mono (list X1)
+
+Checking: 
+ let (lam c0 \ c0) X0 c0 \
+  app c0 (app (app (global ,) (global [])) (literal 1))
+let (lam c0 \ c0) (all any c0 \ mono (c0 ==> c0)) c0 \
+ app c0 (app (app (global ,) (global [])) (literal 1))  :  
+ mono (pair (list X1) int)
+
+Checking: let (lam c0 \ eq c0 c0) X0 c0 \ app c0 (global [])
+let (lam c0 \ eq c0 c0) (all eqt c0 \ mono (c0 ==> bool)) c0 \
+ app c0 (global [])  :  mono bool
+
+Checking: let (lam c0 \ eq c0 c0) X0 c0 \ app c0 (literal 1)
+let (lam c0 \ eq c0 c0) (all eqt c0 \ mono (c0 ==> bool)) c0 \
+ app c0 (literal 1)  :  mono bool
+

@@ -2,8 +2,9 @@ pred w i:term, o:ty.
 
 % terms
 w (app H A) (mono T) :-
-  w H (mono (S ==> T)),
-  w A (mono S).
+  w H (mono TH),
+  w A (mono TA),
+  assert H TH (TA ==> T).
 
 w (lam F) (mono (S ==> T)) :-
   pi x\ w x (mono S) => w (F x) (mono T).
@@ -14,9 +15,10 @@ w (let E PT B) (mono TB) :-
   pi x\ w x PT => w (B x) (mono TB).
 
 w (eq LHS RHS) (mono bool) :-
-  w LHS (mono T),
-  w RHS (mono T),
-  eqbar T.
+  w LHS (mono TL),
+  w RHS (mono TR),
+  eqbar TL,
+  assert RHS TR TL.
 
-w X (mono T) :- w X (all E Poly), specialize (all E Poly) T.
+w X (mono T) :- w X (all E Poly), specialize (all E Poly) T1, assert X T T1.
 

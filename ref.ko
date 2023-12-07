@@ -1,6 +1,0 @@
-KO: type X0 ==> X0 has no equality
-KO: type X0 c0 ==> X1 c0 has no equality
-KO: term global [] has type list X0 but its context expects int
-KO: term literal 2 has type int but its context expects pair int int
-KO: term global xxx has no type
-KO: term c0 has type X0 ==> X1 but its context expects X0

@@ -147,10 +147,10 @@ mem [_|XS] X :- mem XS X.
 
 pred assert i:term, i:tye, i:tye.
 assert _ TY ETY :- TY = ETY, !.
-assert T TY ETY :- print "KO: term" T "has type" TY "but its context expects" ETY, halt.
+assert T TY ETY :- print "KO: term (" T ") has type (" TY ") but its context expects (" ETY ")\n", halt.
 
 pred eqtype-error i:tye.
-eqtype-error T :- print "KO: type" T "has no equality", halt.
+eqtype-error T :- print "KO: type (" T ") has no equality\n", halt.
 
 % }}}
 
@@ -170,18 +170,16 @@ w (global ",")     (all any x\ all any y\ mono (x ==> y ==> (pair x y))).
 
 pred err.
 w X (mono ETY) :- not err, !, err => w X (mono TY), assert X TY ETY.
-w X (mono _) :- print "KO: term" X "has no type", halt.
+w X (mono _) :- print "KO: term (" X ") has no type\n", halt.
 
 pred typecheck i:term.
 typecheck T :-
+  print "Checking:" T,
   theta [],
   w T TY, !,
   clear,
-  print "OK:" T ":" TY.
-typecheck T :-
-  clear,
-  print "KO:" T.
-
+  print T " : " TY,
+  print.
 
 pred tests i:list string.
 tests L :- std.map L test PL, std.forall PL typecheck.
