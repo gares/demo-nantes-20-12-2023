@@ -1,24 +1,24 @@
-pred w i:term, o:ty.
+pred of i:term, o:ty.
 
 % terms
-w (app H A) (mono T) :-
-  w H (mono TH),
-  w A (mono TA),
+of (app H A) (mono T) :-
+  of H (mono TH),
+  of A (mono TA),
   assert H TH (TA ==> T).
 
-w (lam F) (mono (S ==> T)) :-
-  pi x\ w x (mono S) => w (F x) (mono T).
+of (lam F) (mono (S ==> T)) :-
+  pi x\ of x (mono S) => of (F x) (mono T).
 
-w (let E PT B) (mono TB) :-
-  w E (mono T),
+of (let E PT B) (mono TB) :-
+  of E (mono T),
   gammabar (mono T) PT,
-  pi x\ w x PT => w (B x) (mono TB).
+  pi x\ of x PT => of (B x) (mono TB).
 
-w (eq LHS RHS) (mono bool) :-
-  w LHS (mono TL),
-  w RHS (mono TR),
+of (eq LHS RHS) (mono bool) :-
+  of LHS (mono TL),
+  of RHS (mono TR),
   eqbar TL,
   assert RHS TR TL.
 
-w X (mono T) :- w X (all E Poly), specialize (all E Poly) T1, assert X T T1.
+of X (mono T) :- of X (all E Poly), specialize (all E Poly) T1, assert X T T1.
 
