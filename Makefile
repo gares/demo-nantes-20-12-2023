@@ -4,7 +4,7 @@ ALGOS=hm j
 export COLUMNS=80
 
 typecheck-%:
-	@elpi $*.elpi main.elpi -exec print -- >/dev/null 2>/tmp/out ||\
+	@elpi $*.elpi main.elpi -exec print -- >/tmp/out 2>&1 ||\
 		(echo "Type Error $*"; cat /tmp/out; exit 1)
 
 test-%:

@@ -47,7 +47,8 @@ of (global "undup") (all eqt x\ mono (list x ==> list x)).
 
 of (global ",")     (all any x\ all any y\ mono (x ==> y ==> (pair x y))).
 
-% see hm.elpi
+% accumulate hm.
+% accumulate j.
 
 %%%%%%%%%%%% type schema elimination %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 pred specialize i:ty, o:tye.
@@ -74,7 +75,8 @@ pred theta i:list tye.
 
 theta L :- new_constraint (theta L) [_].
 
-% gammabar is not a real constraint, but rather a 
+% gammabar is not a real constraint, but rather a query to the meta level to
+% compute a polymorphic type out of a monomorphic one and its context
 pred gammabar i:ty, o:ty.
 
 gammabar (mono T) TS :-
@@ -173,6 +175,8 @@ typecheck T :-
 pred tests i:list string.
 tests [X] :- test X PL, typecheck PL.
 
+main :- tests ["2"].
+
 pred test i:string, o:term.
 % 3 = 2
 test "1" (eq (global "3") (global "2")).
@@ -201,17 +205,14 @@ test "-1" (eq (lam x\x) (lam x\x)).
 test "-2" (let (lam x\ eq x x) Ty_ refl\
            app refl (lam x\x)).
 
+% 1 = []
 test "-3" (eq (global "1") (global "[]")).
 
+% (1,1) = (fun x -> 2) 3
 test "-4" (eq (app (app (global ",") (global "1")) (global "1"))
               (app (lam (_\global "2")) (global "3"))).
 
 test "-5" (global "xxx").
 
+% (fun x -> x x) (fun x -> x x)
 test "-6" (app (lam x\app x x) (lam x\app x x)).
-
-
-  % let card x = size (undup x) in card []
-  % let f y = let g x = (x,y) in g y in f 1
-  % size 1
-  % [1] = (1,1)
