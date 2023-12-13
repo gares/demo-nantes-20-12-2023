@@ -167,7 +167,7 @@ fname X F :-
   if (L = []) (F = X) (F is X ^ {std.any->string {std.length L}}).
 
 pred pp i:term, o:string.
-pp (lam F) S :- pi x\ fname "x" X, pp x X => S is "(fun " ^ {pp x} ^ " => " ^ {pp (F x)} ^ ")".
+pp (lam F) S :- pi x\ fname "x" X, pp x X => S is "(fun " ^ {pp x} ^ " -> " ^ {pp (F x)} ^ ")".
 pp (let E uvar F) S :- pi x\ fname "f" X, pp x X => S is "let " ^ {pp x} ^ " = " ^ {pp E} ^ " in " ^ {pp (F x)}.
 pp (let E Ty F) S :- pi x\ fname "f" X, pp x X => S is "let " ^ {pp x} ^ " : " ^ {ppty Ty} ^ " = " ^ {pp E} ^ " in " ^ {pp (F x)}.
 pp (app (app (global ",") A) B) S :- S is "(" ^ {pp A} ^ ", " ^ {pp B} ^ ")".

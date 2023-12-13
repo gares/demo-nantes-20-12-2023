@@ -1,15 +1,15 @@
 Checking: 3 = 2
 3 = 2  :  bool
 
-Checking: let f = (fun x => x) in (f [])
-let f : 'a ==> 'a = (fun x => x) in (f [])  :  list X0
+Checking: let f = (fun x -> x) in (f [])
+let f : 'a ==> 'a = (fun x -> x) in (f [])  :  list X0
 
-Checking: let f = (fun x => x) in (f ([], 1))
-let f : 'a ==> 'a = (fun x => x) in (f ([], 1))  :  list X0 * int
+Checking: let f = (fun x -> x) in (f ([], 1))
+let f : 'a ==> 'a = (fun x -> x) in (f ([], 1))  :  list X0 * int
 
-Checking: let f = (fun x => x = x) in (f [])
-let f : ''a ==> bool = (fun x => x = x) in (f [])  :  bool
+Checking: let f = (fun x -> x = x) in (f [])
+let f : ''a ==> bool = (fun x -> x = x) in (f [])  :  bool
 
-Checking: let f = (fun x => x = x) in (f 1)
-let f : ''a ==> bool = (fun x => x = x) in (f 1)  :  bool
+Checking: let f = (fun x -> x = x) in (f 1)
+let f : ''a ==> bool = (fun x -> x = x) in (f 1)  :  bool
 
