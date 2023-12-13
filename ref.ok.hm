@@ -1,21 +1,15 @@
-Checking: eq (global 3) (global 2)
-eq (global 3) (global 2)  :  mono bool
+Checking: 3 = 2
+3 = 2  :  bool
 
-Checking: let (lam c0 \ c0) X0 c0 \ app c0 (global [])
-let (lam c0 \ c0) (all any c0 \ mono (c0 ==> c0)) c0 \ app c0 (global [])  :  
- mono (list X1)
+Checking: let f = (fun x => x) in (f [])
+let f : 'a ==> 'a = (fun x => x) in (f [])  :  list X0
 
-Checking: 
- let (lam c0 \ c0) X0 c0 \ app c0 (app (app (global ,) (global [])) (global 1))
-let (lam c0 \ c0) (all any c0 \ mono (c0 ==> c0)) c0 \
- app c0 (app (app (global ,) (global [])) (global 1))  :  
- mono (pair (list X1) int)
+Checking: let f = (fun x => x) in (f ([], 1))
+let f : 'a ==> 'a = (fun x => x) in (f ([], 1))  :  list X0 * int
 
-Checking: let (lam c0 \ eq c0 c0) X0 c0 \ app c0 (global [])
-let (lam c0 \ eq c0 c0) (all eqt c0 \ mono (c0 ==> bool)) c0 \
- app c0 (global [])  :  mono bool
+Checking: let f = (fun x => x = x) in (f [])
+let f : ''a ==> bool = (fun x => x = x) in (f [])  :  bool
 
-Checking: let (lam c0 \ eq c0 c0) X0 c0 \ app c0 (global 1)
-let (lam c0 \ eq c0 c0) (all eqt c0 \ mono (c0 ==> bool)) c0 \
- app c0 (global 1)  :  mono bool
+Checking: let f = (fun x => x = x) in (f 1)
+let f : ''a ==> bool = (fun x => x = x) in (f 1)  :  bool
 

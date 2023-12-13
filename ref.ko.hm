@@ -1,21 +1,18 @@
-Checking: eq (lam c0 \ c0) (lam c0 \ c0)
-KO: type ( X0 ==> X0 ) has no equality
+Checking: (fun x => x) = (fun x => x)
+KO: type ( X0 ==> X1 ) has no equality
 
-Checking: let (lam c0 \ eq c0 c0) X0 c0 \ app c0 (lam c1 \ c1)
-KO: type ( X1 c0 ==> X2 c0 ) has no equality
+Checking: let f = (fun x => x = x) in (f (fun x => x))
+KO: type ( X0 ==> X1 ) has no equality
 
-Checking: eq (global 1) (global [])
-KO: term ( global [] ) has type ( list X0 ) but its context expects ( int )
+Checking: 1 = []
+KO: term ( [] ) has type ( list X0 ) but its context expects ( int )
 
-Checking: 
- eq (app (app (global ,) (global 1)) (global 1)) 
-  (app (lam c0 \ global 2) (global 3))
-KO: term ( global 2 ) has type ( int ) but its context expects ( pair int int 
- )
+Checking: (1, 1) = ((fun x => 2) 3)
+KO: term ( 2 ) has type ( int ) but its context expects ( int * int )
 
-Checking: global xxx
-KO: term ( global xxx ) has no type
+Checking: xxx
+KO: term ( xxx ) has no type
 
-Checking: app (lam c0 \ app c0 c0) (lam c0 \ app c0 c0)
-KO: term ( c0 ) has type ( X0 ==> X1 ) but its context expects ( X0 )
+Checking: ((fun x => (x x)) (fun x => (x x)))
+KO: term ( c0 ) has type ( X0 ==> X1 ) but its context expects ( X2 )
 

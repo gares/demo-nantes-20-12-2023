@@ -150,26 +150,69 @@ mem L (uvar X _) :- mem! L (uvar X Fresh_).
 
 pred assert i:term, i:tye, i:tye.
 assert _ TY ETY :- TY = ETY, !.
-assert T TY ETY :- print "KO: term (" T ") has type (" TY ") but its context expects (" ETY ")\n", halt.
+assert T TY ETY :- print "KO: term (" {pp T} ") has type (" {ppt TY} ") but its context expects (" {ppt ETY} ")\n", halt.
 
 pred eqtype-error i:tye.
-eqtype-error T :- print "KO: type (" T ") has no equality\n", halt.
+eqtype-error T :- print "KO: type (" {ppt T} ") has no equality\n", halt.
 
 pred new_constraint i:prop, i:A.
 new_constraint P X :- declare_constraint P X.
 
+pred no-parens.
+
+pred fname i:string, o:string.
+fname X F :-
+  Rex is X ^ ".*",
+  std.findall (std.mem {names} N, pp N S, rex.match Rex S) L,
+  if (L = []) (F = X) (F is X ^ {std.any->string {std.length L}}).
+
+pred pp i:term, o:string.
+pp (lam F) S :- pi x\ fname "x" X, pp x X => S is "(fun " ^ {pp x} ^ " => " ^ {pp (F x)} ^ ")".
+pp (let E uvar F) S :- pi x\ fname "f" X, pp x X => S is "let " ^ {pp x} ^ " = " ^ {pp E} ^ " in " ^ {pp (F x)}.
+pp (let E Ty F) S :- pi x\ fname "f" X, pp x X => S is "let " ^ {pp x} ^ " : " ^ {ppty Ty} ^ " = " ^ {pp E} ^ " in " ^ {pp (F x)}.
+pp (app (app (global ",") A) B) S :- S is "(" ^ {pp A} ^ ", " ^ {pp B} ^ ")".
+pp (app (app (global "::") A) B) S :- S is "(" ^ {pp A} ^ " :: " ^ {pp B} ^ ")".
+pp (app H A) S :- no-parens, S is {pp H} ^ " " ^ {pp A}.
+pp (app (app _ _ as H) A) S :- S is "(" ^ {no-parens => pp H} ^ " " ^ {pp A} ^")".
+pp (app H A) S :- S is "(" ^ {pp H} ^ " " ^ {pp A} ^ ")".
+pp (global S) S.
+pp (eq A B) S :- S is {pp A} ^ " = " ^ {pp B}.
+pp (uvar X _) S :- std.any->string X S.
+pp N S :- name N, std.any->string N S.
+
+
+pred ppt i:tye, o:string.
+ppt (A ==> B) S :- S is {ppt A} ^ " ==> " ^ {ppt B}.
+ppt (pair A B) S :- S is {ppt A} ^ " * " ^ {ppt B}.
+ppt (list A) S :- S is "list " ^ {ppt A}.
+ppt int "int". 
+ppt bool "bool". 
+ppt (uvar X _) S :- std.any->string X S.
+
+pred ppty i:ty, o:string.
+ppty (mono T) S :- ppt T S.
+ppty (all any F) S :- pi x\ fname "'a" A, ppt x A => ppty (F x) S.
+ppty (all eqt F) S :- pi x\ fname "''a" A, ppt x A => ppty (F x) S.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% A bit too simple...
+% of X (mono T) :- var X, new_constraint (of X (mono T)) [X].
+% constraint of gammabar eqbar theta {
+%   rule (of X T1) \ (of X T2) <=> (T1 = T2).
+% }
 
 pred err.
 of X (mono ETY) :- not err, !, err => of X (mono TY), assert X TY ETY.
-of X (mono _) :- print "KO: term (" X ") has no type\n", halt.
+of X (mono _) :- print "KO: term (" {pp X} ") has no type\n", halt.
 
 pred typecheck i:term.
 typecheck T :-
-  print "Checking:" T,
+  print "Checking:" {pp T},
   theta [],
   of T TY, !,
-  print T " : " TY,
+  print {pp T} " : " {ppty TY},
+%  print, print_constraints,
   print.
 
 pred tests i:list string.
@@ -197,6 +240,11 @@ test "4" (let (lam x\ eq x x) Ty_ refl\
 test "5" (let (lam x\ eq x x) Ty_ refl\
           app refl (global "1")).
 
+test "6" (eq (app (app (global ",") (global "1")) (global "1"))
+             (app (app (global ",") H)            H)).
+
+test "-7" (eq (app (app (global ",") (global "1")) (global "[]"))
+              (app (app (global ",") H)            H)).
 
 % (fun x -> x) = (fun x -> x)
 test "-1" (eq (lam x\x) (lam x\x)).
