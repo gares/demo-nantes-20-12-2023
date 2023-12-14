@@ -194,6 +194,33 @@ ppty (mono T) S :- ppt T S.
 ppty (all any F) S :- pi x\ fname "'a" A, ppt x A => ppty (F x) S.
 ppty (all eqt F) S :- pi x\ fname "''a" A, ppt x A => ppty (F x) S.
 
+
+pred parse i:list string, o:list string, o:list term.
+parse [] [] [].
+parse ["1"|S] R [global "1"|XS] :- !, parse S R XS.
+parse ["[]"|S] R [global "[]"|XS] :- !, parse S R XS.
+parse ["fun",V,"->"|S] R [lam F|XS] :- !, (pi x\ (parse [V] [] [x] :- !) => parse1 S R1 (F x)), parse R1 R XS.
+parse ["let",V,"="|S] R [let E Ty_ F] :- !, parse1 S ["in"|R1] E, (pi x\ (parse [V] [] [x] :- !) => parse1 R1 R (F x)).
+parse ["("|S] Rest [X|XS] :- !, parse-all S Rest1 TL, mk-app TL X, parse Rest1 Rest XS.
+parse [")"|S] [")"|S] [] :- !.
+parse ["in"|S] ["in"|S] [] :- !.
+parse [X|S] Rest [H|HS] :- std.spy(parse [X] [] [H], parse S Rest HS).
+
+pred mk-app i:list term, o:term.
+mk-app [X] X.
+mk-app [X,Y|XS] R :- mk-app [app X Y|XS] R.
+
+pred parse-all i:list string, o:list string, o:list term.
+parse-all [] [] [].
+parse-all [")"|Rest] Rest [] :- !.
+parse-all S Rest L :- parse S Rest1 L1, parse-all Rest1 Rest L2, std.append L1 L2 L.
+
+pred parse1 i:list string, o:list string, o:term.
+parse1 L R T :- parse L R TL, mk-app TL T.
+
+pred parser i:string, o:term.
+parser S T :- rex.split " " S L, parse1 L [] T.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % A bit too simple...
