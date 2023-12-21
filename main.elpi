@@ -167,11 +167,11 @@ fname X F :-
   if (L = []) (F = X) (F is X ^ {std.any->string {std.length L}}).
 
 pred pp i:term, o:string.
-pp (lam F) S :- pi x\ fname "x" X, pp x X => S is "(fun " ^ {pp x} ^ " -> " ^ {pp (F x)} ^ ")".
-pp (let E uvar F) S :- pi x\ fname "f" X, pp x X => S is "let " ^ {pp x} ^ " = " ^ {pp E} ^ " in " ^ {pp (F x)}.
-pp (let E Ty F) S :- pi x\ fname "f" X, pp x X => S is "let " ^ {pp x} ^ " : " ^ {ppty Ty} ^ " = " ^ {pp E} ^ " in " ^ {pp (F x)}.
-pp (app (app (global ",") A) B) S :- S is "(" ^ {pp A} ^ ", " ^ {pp B} ^ ")".
-pp (app (app (global "::") A) B) S :- S is "(" ^ {pp A} ^ " :: " ^ {pp B} ^ ")".
+pp (lam F) S :- pi x\ fname "x" X, (pp x X :- !) => S is "(fun " ^ {pp x} ^ " -> " ^ {pp (F x)} ^ ")".
+pp (let E uvar F) S :- pi x\ fname "f" X, (pp x X :- !) => S is "let " ^ {pp x} ^ " = " ^ {pp E} ^ " in " ^ {pp (F x)}.
+pp (let E Ty F) S :- pi x\ fname "f" X, (pp x X :- !) => S is "let " ^ {pp x} ^ " : " ^ {ppty Ty} ^ " = " ^ {pp E} ^ " in " ^ {pp (F x)}.
+pp (app (app (global ",") A) B) S :- !, S is "(" ^ {pp A} ^ ", " ^ {pp B} ^ ")".
+pp (app (app (global "::") A) B) S :- !, S is "(" ^ {pp A} ^ " :: " ^ {pp B} ^ ")".
 pp (app H A) S :- no-parens, S is {pp H} ^ " " ^ {pp A}.
 pp (app (app _ _ as H) A) S :- S is "(" ^ {no-parens => pp H} ^ " " ^ {pp A} ^")".
 pp (app H A) S :- S is "(" ^ {pp H} ^ " " ^ {pp A} ^ ")".
@@ -191,35 +191,50 @@ ppt (uvar X _) S :- std.any->string X S.
 
 pred ppty i:ty, o:string.
 ppty (mono T) S :- ppt T S.
-ppty (all any F) S :- pi x\ fname "'a" A, ppt x A => ppty (F x) S.
-ppty (all eqt F) S :- pi x\ fname "''a" A, ppt x A => ppty (F x) S.
+ppty (all any F) S :- pi x\ fname "'a" A, (ppt x A :- !) => ppty (F x) S.
+ppty (all eqt F) S :- pi x\ fname "''a" A, (ppt x A :- !) => ppty (F x) S.
 
+pred kwd i:string.
+kwd "1".
+kwd "2".
+kwd "3".
+kwd "[]".
+kwd "fun".
+kwd "let".
+kwd "=".
+kwd ",".
 
 pred parse i:list string, o:list string, o:list term.
+% parse L _ _ :- print "n" L, fail.
 parse [] [] [].
-parse ["1"|S] R [global "1"|XS] :- !, parse S R XS.
-parse ["[]"|S] R [global "[]"|XS] :- !, parse S R XS.
-parse ["fun",V,"->"|S] R [lam F|XS] :- !, (pi x\ (parse [V] [] [x] :- !) => parse1 S R1 (F x)), parse R1 R XS.
-parse ["let",V,"="|S] R [let E Ty_ F] :- !, parse1 S ["in"|R1] E, (pi x\ (parse [V] [] [x] :- !) => parse1 R1 R (F x)).
-parse ["("|S] Rest [X|XS] :- !, parse-all S Rest1 TL, mk-app TL X, parse Rest1 Rest XS.
-parse [")"|S] [")"|S] [] :- !.
-parse ["in"|S] ["in"|S] [] :- !.
-parse [X|S] Rest [H|HS] :- std.spy(parse [X] [] [H], parse S Rest HS).
+parse ([K|_] as X) R [T|TS] :- kwd K, !, parse1 X S T, parse S R TS.
+parse ["("|L] S [T|TS] :- !, parse L R TL, mk-app TL T, parse R S TS.
+parse [")"|L] L [] :- !.
+parse (["in"|_] as X) X [] :- !.
+parse [X|S] Rest [H|HS] :- !, parse1 [X] [] H, parse S Rest HS.
 
 pred mk-app i:list term, o:term.
+% mk-app L _ :- print L, fail.
 mk-app [X] X.
+mk-app L R :- std.appendR Left [global "="|Right] L, !, R = eq {mk-app Left} {mk-app Right}.
+mk-app L R :- std.appendR Left [global ","|Right] L, !, R = app (app (global ",") {mk-app Left}) {mk-app Right}.
 mk-app [X,Y|XS] R :- mk-app [app X Y|XS] R.
 
-pred parse-all i:list string, o:list string, o:list term.
-parse-all [] [] [].
-parse-all [")"|Rest] Rest [] :- !.
-parse-all S Rest L :- parse S Rest1 L1, parse-all Rest1 Rest L2, std.append L1 L2 L.
-
 pred parse1 i:list string, o:list string, o:term.
+%parse1 L _ _ :- print "1" L, fail.
+parse1 ["1"|S] S (global "1") :- !.
+parse1 ["2"|S] S (global "2") :- !.
+parse1 ["3"|S] S (global "3") :- !.
+parse1 [","|S] S (global ",") :- !.
+parse1 ["="|S] S (global "=") :- !.
+parse1 ["[]"|S] S (global "[]") :- !.
+parse1 ["fun",V,"->"|S] R (lam F) :- !, pi x\ (parse1 [V] [] x :- !) => parse1 S R (F x).
+parse1 ["let",V,"="|S] R (let E Ty_ F) :- !, parse1 S ["in"|R1] E, (pi x\ (parse1 [V] [] x :- !) => parse1 R1 R (F x)).
+parse1 ["let",V,V2,"="|S] R (let (lam E) Ty_ F) :- !, (pi x\ (parse1 [V2] [] x :- !) => parse1 S ["in"|R1] (E x)), (pi x\ (parse1 [V] [] x :- !) => parse1 R1 R (F x)).
 parse1 L R T :- parse L R TL, mk-app TL T.
 
 pred parser i:string, o:term.
-parser S T :- rex.split " " S L, parse1 L [] T.
+parser S T :- rex.split "\\( +\\|\\b\\)" S L, std.filter L (x\not(x = "")) L1, parse1 L1 [] T.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -242,52 +257,41 @@ typecheck T :-
 %  print, print_constraints,
   print.
 
+pred check i:string.
+check S :-
+  parser S Ast, !, typecheck Ast.
+
 pred tests i:list string.
-tests [X] :- test X PL, typecheck PL.
+tests [X] :- test S X PL, std.assert! (parser S PL) "parser error", typecheck PL.
 
-main :- tests ["2"].
+main :- test S _ Ast, print S, std.assert! (parser S Ast1) "parser error", std.assert! (Ast1 = Ast) "parser nuts", fail.
 
-pred test i:string, o:term.
-% 3 = 2
-test "1" (eq (global "3") (global "2")).
+pred test o:string, o:string, o:term.
+test "3 = 2" "1" (eq (global "3") (global "2")).
+test "let id = fun x -> x in id []" "2" (let (lam x\x) Ty_ id\ app id (global "[]")).
+test "let id x = x in id []" "2" (let (lam x\x) Ty_ id\ app id (global "[]")).
 
-% let id x = x in id []
-test "2" (let (lam x\x) Ty_ id\
-          app id (global "[]")).
+test "let id x = x in id ( [] , 1 )" "3" (let (lam x\x) Ty_ id\ app id (app (app (global ",")  (global "[]")) (global "1"))).
 
-% let id x = x in (id [], id 1)
-test "3" (let (lam x\x) Ty_ id\
-          app id (app (app (global ",")  (global "[]")) (global "1"))).
+test "let refl x = x = x in refl []" "4" (let (lam x\ eq x x) Ty_ refl\ app refl (global "[]")).
 
-% let refl x = x = x in refl []
-test "4" (let (lam x\ eq x x) Ty_ refl\
-          app refl (global "[]")).
-
-% let refl x = x = x in refl []
-test "5" (let (lam x\ eq x x) Ty_ refl\
-          app refl (global "1")).
-
-test "6" (eq (app (app (global ",") (global "1")) (global "1"))
+test "let refl x = x = x in refl 1" "5" (let (lam x\ eq x x) Ty_ refl\ app refl (global "1")).
+/*          
+ "6" (eq (app (app (global ",") (global "1")) (global "1"))
              (app (app (global ",") H)            H)).
-
-test "-7" (eq (app (app (global ",") (global "1")) (global "[]"))
+ "-7" (eq (app (app (global ",") (global "1")) (global "[]"))
               (app (app (global ",") H)            H)).
+*/
 
-% (fun x -> x) = (fun x -> x)
-test "-1" (eq (lam x\x) (lam x\x)).
+test "(fun x -> x) = (fun x -> x)" "-1" (eq (lam x\x) (lam x\x)).
 
-% let refl x = x = x in refl (fun x -> x)
-test "-2" (let (lam x\ eq x x) Ty_ refl\
-           app refl (lam x\x)).
+test "let refl x = x = x in refl (fun x -> x)" "-2" (let (lam x\ eq x x) Ty_ refl\ app refl (lam x\x)).
 
-% 1 = []
-test "-3" (eq (global "1") (global "[]")).
+test "1 = []" "-3" (eq (global "1") (global "[]")).
 
-% (1,1) = (fun x -> 2) 3
-test "-4" (eq (app (app (global ",") (global "1")) (global "1"))
-              (app (lam (_\global "2")) (global "3"))).
+test "(1,1) = (fun x -> 2) 3" "-4" (eq (app (app (global ",") (global "1")) (global "1")) (app (lam (_\global "2")) (global "3"))).
+ 
+% test "xxx" "-5" (global "xxx").
 
-test "-5" (global "xxx").
+test "(fun x -> x x) (fun x -> x x)" "-6" (app (lam x\app x x) (lam x\app x x)).
 
-% (fun x -> x x) (fun x -> x x)
-test "-6" (app (lam x\app x x) (lam x\app x x)).

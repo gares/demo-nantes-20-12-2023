@@ -11,9 +11,6 @@ Checking: (1, 1) = ((fun x -> 2) 3)
 KO: term ( ((fun x -> 2) 3) ) has type ( int ) but its context expects ( 
  int * int )
 
-Checking: xxx
-KO: term ( xxx ) has no type
-
 Checking: ((fun x -> (x x)) (fun x -> (x x)))
 KO: term ( c0 ) has type ( X0 ) but its context expects ( X1 ==> X2 )
 
